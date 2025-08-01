@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competencia de Conocimientos DSI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba') no-repeat center center/cover;
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .cursor-light {
+      position: fixed;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0) 70%
+      );
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      transition: transform 0.1s ease;
+    }
+
+    .content {
+      position: relative;
+      z-index: 3;
+      padding: 50px;
+      text-align: center;
+      transition: filter 0.3s ease; /* Transición para el filtro de desenfoque */
+    }
+
+    .content.blurred {
+      filter: blur(5px); /* Desenfoque cuando el popup está visible */
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+    }
+
+    .cursor-light.hovered {
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+
+    #crucigrama {
+      margin-top: 50px;
+    }
+
+    iframe {
+      width: 90vw;
+      height: auto;
+      min-height: 600px;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      display: block;
+      margin: 0 auto;
+      z-index: 2;
+    }
+
+    /* Estilos para el popup */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 71, 171, 0.9); /* Fondo azul con transparencia */
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      display: none;
+    }
+
+    .popup.show {
+      display: block;
+    }
+
+    .popup ul {
+      list-style-type: disc;
+      text-align: left;
+      margin: 0 auto 20px;
+      font-size: 1.1rem;
+    }
+
+    .popup li {
+      margin-bottom: 10px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="cursor-light"></div>
+  
+  <div class="content" id="content">
+    <h1>Competencia de Conocimientos DSI</h1>
+    <p>¡Bienvenido a nuestra competencia de conocimientos en Desarrollo de Software e Informática! Pon a prueba tus habilidades resolviendo el crucigrama interactivo.</p>
+    <button class="btn" onclick="showPopup()">Ver Instrucciones</button>
+    
+    <section id="crucigrama">
+      <h2>Crucigrama Interactivo</h2>
+      <p>Resuelve el crucigrama sobre temas de DSI. ¡Demuestra tu conocimiento!</p>
+      <iframe allow="fullscreen; autoplay; allow-top-navigation-by-user-activation" allowfullscreen width="795" height="690" frameborder="0" src="https://es.educaplay.com/juego/24805356-tecnologia_y_programacion.html"></iframe>
+    </section>
+  </div>
+
+  <!-- Popup para instrucciones -->
+  <div class="popup" id="instructionsPopup">
+    <span class="close-btn" onclick="closePopup()">&times;</span>
+    <h2>Instrucciones para los Participantes</h2>
+    <ul>
+      <li>Lee cuidadosamente cada pista del crucigrama antes de ingresar tu respuesta.</li>
+      <li>Las respuestas deben ser términos técnicos relacionados con la carrera de DSI.</li>
+      <li>Utiliza solo letras y evita caracteres especiales o espacios, salvo que se indique lo contrario.</li>
+      <li>Tienes un tiempo máximo de 30 minutos para completar el crucigrama.</li>
+      <li>Una vez finalizado, haz clic en "Enviar" dentro del crucigrama para registrar tu participación.</li>
+      <li>No uses recursos externos (libros, internet, etc.) durante la competencia.</li>
+      <li>En caso de dudas técnicas, contacta al organizador antes de comenzar.</li>
+    </ul>
+    <a href="#crucigrama" class="btn" onclick="closePopup()">Jugar Crucigrama</a>
+  </div>
+
+  <script>
+    const cursorLight = document.querySelector('.cursor-light');
+    const popup = document.getElementById('instructionsPopup');
+    const content = document.getElementById('content');
+
+    // Mostrar el popup después de 3 segundos
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        popup.classList.add('show');
+        content.classList.add('blurred');
+      }, 3000);
+    });
+
+    // Función para mostrar el popup
+    function showPopup() {
+      popup.classList.add('show');
+      content.classList.add('blurred');
+    }
+
+    // Función para cerrar el popup
+    function closePopup() {
+      popup.classList.remove('show');
+      content.classList.remove('blurred');
+    }
+
+    // Efecto de linterna
+    document.addEventListener('mousemove', (e) => {
+      cursorLight.style.left = `${e.clientX}px`;
+      cursorLight.style.top = `${e.clientY}px`;
+    });
+
+    document.querySelectorAll('a, button, .close-btn').forEach(element => {
+      element.addEventListener('mouseenter', () => {
+        cursorLight.classList.add('hovered');
+      });
+      element.addEventListener('mouseleave', () => {
+        cursorLight.classList.remove('hovered');
+      });
+    });
+  </script>
+</body>
+</html>
